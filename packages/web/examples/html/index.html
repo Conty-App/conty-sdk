@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Conty: script tag</title>
+    <script>
+      window.conty = window.conty || { q: [], track(...args) { this.q.push(args); } };
+    </script>
+    <script async src="https://conty.link/sdk.js" data-key="cpk_SUA_CHAVE"></script>
+  </head>
+  <body>
+    <button type="button" onclick="conty.track('sign_up')">Criar conta</button>
+  </body>
+</html>

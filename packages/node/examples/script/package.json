@@ -1,0 +1,15 @@
+{
+  "name": "@conty-examples/node-script",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types send-orders.ts"
+  },
+  "dependencies": {
+    "@conty/node": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.3"
+  }
+}

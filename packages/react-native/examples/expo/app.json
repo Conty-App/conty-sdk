@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "name": "Conty Expo",
+    "slug": "conty-expo",
+    "scheme": "minhaloja",
+    "plugins": ["expo-router"]
+  }
+}

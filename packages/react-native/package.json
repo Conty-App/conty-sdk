@@ -1,0 +1,65 @@
+{
+  "name": "@conty/react-native",
+  "version": "0.1.0",
+  "description": "Conty React Native SDK: conversion events with creator attribution from deep links",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Conty-App/conty-sdk.git",
+    "directory": "packages/react-native"
+  },
+  "homepage": "https://help.appconty.com/api/guias/eventos-de-conversao",
+  "bugs": {
+    "url": "https://github.com/Conty-App/conty-sdk/issues"
+  },
+  "keywords": [
+    "conty",
+    "conversion",
+    "attribution",
+    "utm",
+    "deep-link",
+    "react-native",
+    "expo"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsup",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "@react-native-async-storage/async-storage": ">=1.17.0",
+    "react-native": ">=0.65.0"
+  },
+  "devDependencies": {
+    "@conty/core": "*",
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "react-native": "^0.88.1",
+    "tsup": "^8.5.1",
+    "vitest": "^4.1.9"
+  }
+}

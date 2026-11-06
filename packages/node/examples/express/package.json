@@ -1,0 +1,17 @@
+{
+  "name": "@conty-examples/node-express",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types server.ts"
+  },
+  "dependencies": {
+    "@conty/node": "file:../..",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.3"
+  }
+}

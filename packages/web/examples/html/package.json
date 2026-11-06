@@ -1,0 +1,7 @@
+{
+  "name": "@conty-examples/web-html",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve ."
+  }
+}
