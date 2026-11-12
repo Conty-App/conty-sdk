@@ -6,14 +6,16 @@ export class ContyError extends Error {
   readonly code: string;
   readonly details: unknown;
   readonly accepted: number;
+  readonly requestId: string | null;
 
-  constructor({ status, code, message, details, accepted = 0 }: ContyErrorInit) {
+  constructor({ status, code, message, details, accepted = 0, requestId = null }: ContyErrorInit) {
     super(message);
     this.name = "ContyError";
     this.status = status;
     this.code = code;
     this.details = details;
     this.accepted = accepted;
+    this.requestId = requestId;
   }
 }
 
@@ -34,8 +36,8 @@ export function toContyError(cause: unknown, code: string): ContyError {
 
 export function withAccepted(error: ContyError, accepted: number): ContyError {
   if (accepted === error.accepted) return error;
-  const { status, code, message, details } = error;
-  return new ContyError({ status, code, message, details, accepted });
+  const { status, code, message, details, requestId } = error;
+  return new ContyError({ status, code, message, details, accepted, requestId });
 }
 
 export async function errorFromResponse(response: Response): Promise<ContyError> {
@@ -44,12 +46,14 @@ export async function errorFromResponse(response: Response): Promise<ContyError>
   const error = prop(parseJson(text), "error");
   const code = prop(error, "code");
   const message = prop(error, "message");
+  const requestId = prop(error, "request_id") ?? response.headers.get("X-Request-ID");
   return new ContyError({
     status,
     code: typeof code === "string" ? code : `http_${status}`,
     message:
       typeof message === "string" ? message : text.trim() || `Conty API responded with ${status}.`,
     details: prop(error, "details"),
+    requestId: typeof requestId === "string" ? requestId : null,
   });
 }
 

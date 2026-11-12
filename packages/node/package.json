@@ -1,7 +1,7 @@
 {
   "name": "@conty/node",
-  "version": "0.1.0",
-  "description": "Conty server SDK: send conversion events to the Conty Events API",
+  "version": "0.4.0",
+  "description": "Conty server SDK: conversion events and the public campaigns API for integrations and AI agents",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -18,7 +18,12 @@
     "conversion",
     "attribution",
     "events",
-    "server"
+    "server",
+    "campaigns",
+    "creators",
+    "influencer-marketing",
+    "public-api",
+    "ai-agents"
   ],
   "engines": {
     "node": ">=20"
@@ -50,10 +55,12 @@
   "scripts": {
     "build": "rm -rf dist && tsup",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "openapi:types": "openapi-typescript ../../test/fixtures/openapi.json -o src/api/generated/openapi.ts"
   },
   "devDependencies": {
     "@conty/core": "*",
+    "openapi-typescript": "^7.13.0",
     "tsup": "^8.5.1",
     "vitest": "^4.1.9"
   }
