@@ -16,41 +16,43 @@ export interface TransportConfig {
   onError?: (error: ContyError) => void;
 }
 
+const { header } = PUBLIC_API;
+
 function headersFor(apiKey: string, request: ApiRequest): Record<string, string> {
   const headers: Record<string, string> = {
-    Authorization: `Bearer ${apiKey}`,
-    Accept: request.accept ?? "application/json",
+    [header.authorization]: `Bearer ${apiKey}`,
+    [header.accept]: request.accept ?? PUBLIC_API.jsonContent,
   };
-  if (request.body !== undefined) headers["Content-Type"] = "application/json";
-  if (request.idempotencyKey) headers[PUBLIC_API.header.idempotency] = request.idempotencyKey;
+  if (request.body !== undefined) headers[header.contentType] = PUBLIC_API.jsonContent;
+  if (request.idempotencyKey) headers[header.idempotency] = request.idempotencyKey;
   return headers;
 }
 
-async function readBody<T>(response: Response): Promise<T> {
-  const text = await response.text();
-  if (response.status === 204) return null as T;
-  if (PUBLIC_API.textContent.test(response.headers.get("Content-Type") ?? "")) return text as T;
+async function readBody(response: Response): Promise<unknown> {
+  const text = await response.text().catch((cause: unknown) => {
+    throw toContyError(cause, "network_error");
+  });
+  if (response.status === 204) return null;
+  if (PUBLIC_API.textContent.test(response.headers.get(header.contentType) ?? "")) return text;
   const parsed = parseJson(text);
-  if (parsed === null) {
-    throw new ContyError({
-      status: response.status,
-      code: "invalid_response",
-      message: "Conty API returned a body that is not JSON.",
-      requestId: response.headers.get(PUBLIC_API.header.requestId),
-    });
-  }
-  return parsed as T;
+  if (parsed !== null) return parsed;
+  throw new ContyError({
+    status: response.status,
+    code: "invalid_response",
+    message: "Conty API returned a body that is not JSON.",
+    requestId: response.headers.get(header.requestId),
+  });
 }
 
 export function createTransport(config: TransportConfig): Transport {
   const { apiKey, baseUrl, maxRetries, timeoutMs, deps, sleep, onError } = config;
 
-  async function send<T>(
+  async function send(
     url: string,
     init: RequestInit,
     retryable: boolean,
     retryServerErrors: boolean,
-  ): Promise<T> {
+  ): Promise<unknown> {
     for (let attempt = 0; ; attempt++) {
       const last = !retryable || attempt >= maxRetries;
       const signal = AbortSignal.timeout(timeoutMs);
@@ -58,14 +60,14 @@ export function createTransport(config: TransportConfig): Transport {
         if (last) throw toContyError(cause, "network_error");
         return null;
       });
-      if (response?.ok) return readBody<T>(response);
+      if (response?.ok) return readBody(response);
       const transient =
         response === null ||
         response.status === 429 ||
         (retryServerErrors && response.status >= 500);
       if (response && (last || !transient)) throw await errorFromResponse(response);
       await response?.body?.cancel().catch(() => undefined);
-      const retryAfter = response?.headers.get("Retry-After") ?? null;
+      const retryAfter = response?.headers.get(header.retryAfter) ?? null;
       await sleep(retryDelayMs(attempt, retryAfter, deps.clock.now()));
     }
   }
@@ -80,10 +82,8 @@ export function createTransport(config: TransportConfig): Transport {
       };
       const retryable = request.method === "GET" || Boolean(request.idempotencyKey);
       try {
-        return {
-          data: await send<T>(url, init, retryable, request.method === "GET"),
-          error: null,
-        };
+        const data = await send(url, init, retryable, request.method === "GET");
+        return { data: data as T, error: null };
       } catch (cause) {
         const error = toContyError(cause, "unexpected_error");
         onError?.(error);

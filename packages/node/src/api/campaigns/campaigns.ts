@@ -110,46 +110,17 @@ export function createCampaigns(transport: Transport, randomId: RandomId): Campa
     items,
     itemsAll: (id, params) => paginate((page) => items(id, page), params),
     validate: (body) => transport.request({ method: "POST", path: "/campaigns/validate", body }),
-    create: (body, options) =>
-      transport.request({
-        method: "POST",
-        path: "/campaigns",
-        body,
-        idempotencyKey: options?.idempotencyKey ?? randomId(),
-      }),
-    update: (id, body, options) =>
-      transport.request({
-        method: "PATCH",
-        path: path(id),
-        body,
-        idempotencyKey: options?.idempotencyKey,
-      }),
-    setStatus: (id, body, options) =>
-      transport.request({
-        method: "POST",
-        path: path(id, "/status"),
-        body,
-        idempotencyKey: options?.idempotencyKey,
-      }),
+    create: (body, options) => required("POST", "/campaigns", body, options),
+    update: (id, body, options) => optional("PATCH", path(id), body, options),
+    setStatus: (id, body, options) => optional("POST", path(id, "/status"), body, options),
     remove: (id) => transport.request({ method: "DELETE", path: path(id) }),
-    renew: (id, body, options) =>
-      transport.request({
-        method: "POST",
-        path: path(id, "/renew"),
-        body,
-        idempotencyKey: options?.idempotencyKey ?? randomId(),
-      }),
+    renew: (id, body, options) => required("POST", path(id, "/renew"), body, options),
     publishCost: (id) => transport.request({ method: "GET", path: path(id, "/publish-cost") }),
     briefings,
     briefingsAll: (id, params = {}) => paginate((page) => briefings(id, page), params),
     proposalSuggestions: (params = {}) =>
       transport.request({ method: "GET", path: "/campaigns/proposal-suggestions", query: params }),
     attachBriefingFile: (id, body, options) =>
-      transport.request({
-        method: "POST",
-        path: path(id, "/briefings/attachments"),
-        body,
-        idempotencyKey: options?.idempotencyKey ?? randomId(),
-      }),
+      required("POST", path(id, "/briefings/attachments"), body, options),
   };
 }

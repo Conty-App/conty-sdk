@@ -38,8 +38,6 @@ export interface Page<T> {
   next_cursor: string | null;
 }
 
-export type QueryValue = string | number | boolean | readonly string[] | null | undefined;
-
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 export interface ApiRequest {

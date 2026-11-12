@@ -1,4 +1,5 @@
 import type { RandomId } from "@conty/core";
+import { createWriter } from "../request";
 import type { Transport } from "../types";
 import { segment } from "../url";
 import type { CampaignCreatorsResource } from "./types";
@@ -7,6 +8,7 @@ export function createCampaignCreators(
   transport: Transport,
   randomId: RandomId,
 ): CampaignCreatorsResource {
+  const { optional, required } = createWriter(transport, randomId);
   const path = (campaignId: string, suffix: string) =>
     `/campaigns/${segment(campaignId)}/creators${suffix}`;
   const creator = (campaignId: string, creatorId: string, field: string) =>
@@ -14,32 +16,12 @@ export function createCampaignCreators(
 
   return {
     setScopeOption: (campaignId, creatorId, body, options) =>
-      transport.request({
-        method: "PATCH",
-        path: creator(campaignId, creatorId, "scope-option"),
-        body,
-        idempotencyKey: options?.idempotencyKey,
-      }),
+      optional("PATCH", creator(campaignId, creatorId, "scope-option"), body, options),
     setBriefing: (campaignId, creatorId, body, options) =>
-      transport.request({
-        method: "PATCH",
-        path: creator(campaignId, creatorId, "briefing"),
-        body,
-        idempotencyKey: options?.idempotencyKey,
-      }),
+      optional("PATCH", creator(campaignId, creatorId, "briefing"), body, options),
     setScopeAmount: (campaignId, creatorId, body, options) =>
-      transport.request({
-        method: "PATCH",
-        path: creator(campaignId, creatorId, "scope-amount"),
-        body,
-        idempotencyKey: options?.idempotencyKey,
-      }),
+      optional("PATCH", creator(campaignId, creatorId, "scope-amount"), body, options),
     bulkExclude: (campaignId, body, options) =>
-      transport.request({
-        method: "POST",
-        path: path(campaignId, "/bulk/exclude"),
-        body,
-        idempotencyKey: options?.idempotencyKey ?? randomId(),
-      }),
+      required("POST", path(campaignId, "/bulk/exclude"), body, options),
   };
 }

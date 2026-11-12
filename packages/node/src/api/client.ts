@@ -42,7 +42,7 @@ export function createContyApi(options: ContyApiOptions): ContyApi {
     campaigns: createCampaigns(transport, deps.randomId),
     applications: createApplications(transport, deps.randomId),
     missions: createMissions(transport, deps.randomId),
-    missionCombos: createMissionCombos(transport),
+    missionCombos: createMissionCombos(transport, deps.randomId),
     bulkJobs: createBulkJobs(transport, deps.clock, wait, options.onError),
     postChecks: createPostChecks(transport, deps.randomId),
     conversionEvents: createConversionEvents(transport, deps.randomId),

@@ -1,7 +1,15 @@
 export const PUBLIC_API = {
   baseUrl: "https://api.appconty.com/public/v1",
   keyPrefix: "ck_live_",
-  header: { idempotency: "Idempotency-Key", requestId: "X-Request-ID" },
+  header: {
+    authorization: "Authorization",
+    accept: "Accept",
+    contentType: "Content-Type",
+    idempotency: "Idempotency-Key",
+    requestId: "X-Request-ID",
+    retryAfter: "Retry-After",
+  },
+  jsonContent: "application/json",
   textContent: /^text\/csv\b/i,
   csvAccept: "text/csv, application/json",
   bulkJob: {
