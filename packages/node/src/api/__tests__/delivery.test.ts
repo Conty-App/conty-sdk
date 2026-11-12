@@ -190,10 +190,7 @@ describe("missions delivery", () => {
   });
 
   it("retries a coupon creation after a 429 with the same generated key", async () => {
-    const { conty, fetch } = setup([
-      apiError(429, "rate_limited"),
-      json({ id: MISSION_ID }, 201),
-    ]);
+    const { conty, fetch } = setup([apiError(429, "rate_limited"), json({ id: MISSION_ID }, 201)]);
 
     const { error } = await conty.missions.createCoupon(MISSION_ID, { coupon_id: "c1" });
 
