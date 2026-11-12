@@ -3,15 +3,14 @@ import { positiveMs } from "../../client/options";
 import { ContyError } from "../../errors/errors";
 import type { Sleep } from "../../transport/types";
 import { PUBLIC_API } from "../constants";
+import { paginateBy } from "../pagination";
 import type { Transport } from "../types";
 import { segment } from "../url";
-import type { BulkJob, BulkJobsResource } from "./types";
+import type { BulkJobStatus, BulkJobsResource } from "./types";
 
 const { bulkJob } = PUBLIC_API;
 
-function isFinished(job: BulkJob): boolean {
-  return (bulkJob.terminal as readonly string[]).includes(job.status);
-}
+const terminal: ReadonlySet<BulkJobStatus> = new Set(bulkJob.terminal);
 
 export function createBulkJobs(
   transport: Transport,
@@ -24,13 +23,19 @@ export function createBulkJobs(
 
   return {
     get,
+    failuresAll: (id, params = {}) =>
+      paginateBy(
+        (page) => get(id, page),
+        params,
+        (page) => page.failures,
+      ),
     async wait(id, options = {}) {
       const intervalMs = positiveMs(options.intervalMs, bulkJob.intervalMs);
       const timeoutMs = positiveMs(options.timeoutMs, bulkJob.timeoutMs);
       const deadline = clock.now() + timeoutMs;
       for (;;) {
         const result = await get(id);
-        if (result.error || isFinished(result.data)) return result;
+        if (result.error || terminal.has(result.data.status)) return result;
         if (clock.now() + intervalMs > deadline) {
           const error = new ContyError({
             status: null,

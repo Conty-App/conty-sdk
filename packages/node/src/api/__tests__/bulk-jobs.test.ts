@@ -102,3 +102,23 @@ describe("bulkJobs.wait", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("bulkJobs.failuresAll", () => {
+  it("follows next_cursor through every page of failures", async () => {
+    const first = [{ id: "m1", code: "invalid_transition", message: null }];
+    const second = [{ id: "m2", code: "not_found", message: null }];
+    const { conty, fetch } = setup([
+      json(job("failed", { failures: first, next_cursor: "f2" })),
+      json(job("failed", { failures: second, next_cursor: null })),
+    ]);
+
+    const failures: unknown[] = [];
+    for await (const failure of conty.bulkJobs.failuresAll(JOB_ID, { limit: 1 })) {
+      failures.push(failure);
+    }
+
+    expect(failures).toEqual([...first, ...second]);
+    expect(call(fetch, 0).url).toBe(`${BASE}/bulk-jobs/${JOB_ID}?limit=1`);
+    expect(call(fetch, 1).url).toBe(`${BASE}/bulk-jobs/${JOB_ID}?limit=1&cursor=f2`);
+  });
+});

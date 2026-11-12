@@ -2,7 +2,7 @@ import type { ContyResult } from "../client/types";
 import type { Page } from "./types";
 
 interface CursorPage {
-  has_more: boolean;
+  has_more?: boolean;
   next_cursor: string | null;
 }
 
@@ -16,7 +16,7 @@ export async function* paginateBy<T, R extends CursorPage, P extends { cursor?: 
     const { data, error } = await fetchPage({ ...params, cursor });
     if (error) throw error;
     yield* items(data);
-    if (!data.has_more || !data.next_cursor || data.next_cursor === cursor) return;
+    if (data.has_more === false || !data.next_cursor || data.next_cursor === cursor) return;
     cursor = data.next_cursor;
   }
 }
