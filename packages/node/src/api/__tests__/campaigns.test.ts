@@ -142,6 +142,20 @@ describe("campaigns.create", () => {
     expect(call(fetch, 1).headers.get("Idempotency-Key")).toBe("order-42");
   });
 
+  it("stops on 409 idempotency_key_failed after a 5xx with the same key", async () => {
+    const { conty, fetch } = setup([
+      apiError(500, "internal_error"),
+      apiError(409, "idempotency_key_failed"),
+    ]);
+
+    const { data, error } = await conty.campaigns.create(body, { idempotencyKey: "order-43" });
+
+    expect(data).toBeNull();
+    expect(error).toMatchObject({ status: 409, code: "idempotency_key_failed" });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(call(fetch, 1).headers.get("Idempotency-Key")).toBe("order-43");
+  });
+
   it("does not retry a business rule error", async () => {
     const { conty, fetch } = setup([apiError(422, "end_date_required")]);
 
