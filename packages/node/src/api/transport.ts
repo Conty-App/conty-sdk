@@ -45,7 +45,12 @@ async function readBody<T>(response: Response): Promise<T> {
 export function createTransport(config: TransportConfig): Transport {
   const { apiKey, baseUrl, maxRetries, timeoutMs, deps, sleep, onError } = config;
 
-  async function send<T>(url: string, init: RequestInit, retryable: boolean): Promise<T> {
+  async function send<T>(
+    url: string,
+    init: RequestInit,
+    retryable: boolean,
+    retryServerErrors: boolean,
+  ): Promise<T> {
     for (let attempt = 0; ; attempt++) {
       const last = !retryable || attempt >= maxRetries;
       const signal = AbortSignal.timeout(timeoutMs);
@@ -54,7 +59,10 @@ export function createTransport(config: TransportConfig): Transport {
         return null;
       });
       if (response?.ok) return readBody<T>(response);
-      const transient = response === null || response.status === 429 || response.status >= 500;
+      const transient =
+        response === null ||
+        response.status === 429 ||
+        (retryServerErrors && response.status >= 500);
       if (response && (last || !transient)) throw await errorFromResponse(response);
       await response?.body?.cancel().catch(() => undefined);
       const retryAfter = response?.headers.get("Retry-After") ?? null;
@@ -72,7 +80,10 @@ export function createTransport(config: TransportConfig): Transport {
       };
       const retryable = request.method === "GET" || Boolean(request.idempotencyKey);
       try {
-        return { data: await send<T>(url, init, retryable), error: null };
+        return {
+          data: await send<T>(url, init, retryable, request.method === "GET"),
+          error: null,
+        };
       } catch (cause) {
         const error = toContyError(cause, "unexpected_error");
         onError?.(error);

@@ -189,9 +189,9 @@ describe("missions delivery", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it("retries a coupon creation after a 503 with the same generated key", async () => {
+  it("retries a coupon creation after a 429 with the same generated key", async () => {
     const { conty, fetch } = setup([
-      apiError(503, "internal_error"),
+      apiError(429, "rate_limited"),
       json({ id: MISSION_ID }, 201),
     ]);
 

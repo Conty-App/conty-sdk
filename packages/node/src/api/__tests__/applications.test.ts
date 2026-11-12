@@ -184,8 +184,8 @@ describe("applications", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it("retries a bulk exclude after a 503 with the same generated key", async () => {
-    const { conty, fetch } = setup([apiError(503, "internal_error"), json({ job_id: "j1" }, 202)]);
+  it("retries a bulk exclude after a 429 with the same generated key", async () => {
+    const { conty, fetch } = setup([apiError(429, "rate_limited"), json({ job_id: "j1" }, 202)]);
 
     const { error } = await conty.campaigns.creators.bulkExclude(CAMPAIGN_ID, {
       creator_ids: ["c1"],

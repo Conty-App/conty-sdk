@@ -226,8 +226,8 @@ describe("missions", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  it("retries a bulk route after a 503 keeping the caller key", async () => {
-    const { conty, fetch } = setup([apiError(503, "internal_error"), json({ job_id: "j1" }, 202)]);
+  it("retries a bulk route after a 429 keeping the caller key", async () => {
+    const { conty, fetch } = setup([apiError(429, "rate_limited"), json({ job_id: "j1" }, 202)]);
 
     const { error } = await conty.missions.bulkRemove(
       { mission_ids: ["m1"] },

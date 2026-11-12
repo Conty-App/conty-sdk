@@ -19,7 +19,7 @@ SDK de servidor da [Conty](https://appconty.com) para a API de eventos de conver
 - Preenche `occurred_at` (agora) e `external_id` (UUID) quando você não passa, e ignora campos `null`.
 - Divide lotes grandes no limite da API: 100 eventos e 120 KB por requisição.
 - Cada tentativa tem limite de tempo (`timeoutMs`, 10 s por padrão).
-- Tenta de novo em 429, 5xx, falha de rede e tempo esgotado, respeitando o `Retry-After`, até 2 minutos. Sem `Retry-After`, espera um tempo aleatório até o teto exponencial (500 ms, 1 s, 2 s, ..., no máximo 30 s). Nunca repete outro 4xx.
+- Tenta de novo em 429, falha de rede e tempo esgotado, e também em 5xx quando é leitura (`GET`), respeitando o `Retry-After`, até 2 minutos. Sem `Retry-After`, espera um tempo aleatório até o teto exponencial (500 ms, 1 s, 2 s, ..., no máximo 30 s). Nunca repete outro 4xx.
 
 ## Instalar
 
@@ -74,7 +74,7 @@ Os lotes saem em sequência. Se um falhar, `data` vem `null`, `error` vem preenc
 | --- | --- | --- |
 | `key` | | Chave secreta de eventos, começa com `cev_`. Outra chave, inclusive a pública (`cpk_`), lança `ContyError` na hora, porque é erro de configuração. |
 | `apiHost` | `https://conty.link` | Origem da API. O endpoint é `{apiHost}/v1/events`. |
-| `maxRetries` | `2` | Novas tentativas depois da primeira em 429, 5xx, falha de rede e tempo esgotado (3 tentativas no total). Inteiro de 0 a 10: fora disso, o valor é cortado, e um valor que não é número volta ao padrão. |
+| `maxRetries` | `2` | Novas tentativas depois da primeira em 429, falha de rede e tempo esgotado (e 5xx em `GET`) (3 tentativas no total). Inteiro de 0 a 10: fora disso, o valor é cortado, e um valor que não é número volta ao padrão. |
 | `timeoutMs` | `10000` | Tempo máximo de cada tentativa, em milissegundos. |
 | `onError` | | Chamado com cada `ContyError` devolvido, para log centralizado. |
 | `fetch` | `fetch` global | Troque para testes ou para um `fetch` próprio. |
@@ -237,8 +237,8 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 - **Status.** `review` publica o rascunho, `paused` pausa, `approved` retoma a campanha pausada, `completed` encerra (não volta), `archived` arquiva e `active` só restaura a arquivada. Transição que não vale para o status atual responde 409 `invalid_transition`. Pausar ou encerrar com entrega em andamento responde 409 `blocking_missions`, e `force_close: true` encerra mesmo assim. `remove` com entrega em andamento também responde 409 `blocking_missions`: encerre antes com `setStatus(id, { status: "completed", force_close: true })`.
 - **Dinheiro em centavos inteiros** (`budget_cents: 500_000` é R$ 5.000,00).
 - **Idempotência.** As rotas em que a API exige a chave sempre mandam `Idempotency-Key` (a sua em `opts.idempotencyKey` ou uma gerada) e repetem a mesma chave nas retentativas, então um timeout nunca cria duas campanhas: `campaigns.create`, `renew`, `attachBriefingFile`, `uploads.import`, `applications.bulk`, `campaigns.creators.bulkExclude`, `missions.reinvite`, `approvePending`, `bulkDeadline`, `bulkSend`, `bulkRemove`, `missions.createCoupon`, `missions.comments.create`, `campaigns.coupons.pool.add`, `coupons.bulk`, `coupons.setCommissionBudget` e `campaigns.shortLinks.create`. As outras escritas que aceitam `opts` só mandam a chave, e só retentam, quando você passa `idempotencyKey`. `remove`, `validate` e `uploads.create` não têm chave e não são retentados.
-- **Chave que falhou.** Se uma requisição com `Idempotency-Key` cai em 5xx ou exceção no meio, a chave fica marcada como falha, porque a escrita pode ter tido efeito, e repetir com ela responde 409 `idempotency_key_failed` (inclusive a retentativa automática do SDK depois desse 5xx, que não é repetida de novo). Confira o recurso (por exemplo, com `get` ou `list`) e, se for repetir, mande uma `idempotencyKey` nova. A mesma chave com outro corpo, outra rota, outra chave de API ou outro usuário responde 422 `idempotency_key_reused`.
-- **Retentativa** em 429, 5xx e falha de rede, só em `GET` e em requisição com `Idempotency-Key`, respeitando `Retry-After`. Erro de regra (403, 409, 422) nunca é repetido.
+- **Chave que falhou.** Se uma requisição com `Idempotency-Key` cai em 5xx ou exceção no meio, a chave fica marcada como falha, porque a escrita pode ter tido efeito, e repetir com ela responde 409 `idempotency_key_failed` (por isso o SDK não repete escrita que recebeu 5xx: devolve o erro na hora). Confira o recurso (por exemplo, com `get` ou `list`) e, se for repetir, mande uma `idempotencyKey` nova. A mesma chave com outro corpo, outra rota, outra chave de API ou outro usuário responde 422 `idempotency_key_reused`.
+- **Retentativa** em 429 e falha de rede, só em `GET` e em requisição com `Idempotency-Key`, respeitando `Retry-After`. 5xx só é repetido em `GET`: numa escrita, a chave já ficou marcada como falha. Erro de regra (403, 409, 422) nunca é repetido.
 - **Nunca lança** erro de API: todo método devolve `{ data, error }`. A exceção é o `for await` dos métodos `*All` (`listAll`, `itemsAll`, `briefingsAll`, `salesAll`, `suggestionsAll`, `trackingAll` e os outros), que lança o `ContyError` da página que falhou.
 
 ## Quadro da campanha

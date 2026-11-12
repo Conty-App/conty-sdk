@@ -71,8 +71,8 @@ describe("uploads.import", () => {
     expect(sent).toEqual(body);
   });
 
-  it("retries a 502 with the same caller key", async () => {
-    const { conty, fetch } = setup([apiError(502, "internal_error"), json({ upload_ref: "u" })]);
+  it("retries a 429 with the same caller key", async () => {
+    const { conty, fetch } = setup([apiError(429, "rate_limited"), json({ upload_ref: "u" })]);
 
     const { error } = await conty.uploads.import(body, { idempotencyKey: "cover-1" });
 

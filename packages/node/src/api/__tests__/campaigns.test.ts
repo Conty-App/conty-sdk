@@ -142,18 +142,32 @@ describe("campaigns.create", () => {
     expect(call(fetch, 1).headers.get("Idempotency-Key")).toBe("order-42");
   });
 
-  it("stops on 409 idempotency_key_failed after a 5xx with the same key", async () => {
-    const { conty, fetch } = setup([
-      apiError(500, "internal_error"),
-      apiError(409, "idempotency_key_failed"),
-    ]);
+  it("retries a read after a 5xx", async () => {
+    const { conty, fetch } = setup([apiError(503, "internal_error"), json({ id: CAMPAIGN_ID })]);
+
+    const { error } = await conty.campaigns.get(CAMPAIGN_ID);
+
+    expect(error).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a write that got a 5xx, since the key is now marked as failed", async () => {
+    const { conty, fetch } = setup([apiError(500, "internal_error")]);
 
     const { data, error } = await conty.campaigns.create(body, { idempotencyKey: "order-43" });
 
     expect(data).toBeNull();
+    expect(error).toMatchObject({ status: 500, code: "internal_error" });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns 409 idempotency_key_failed when the caller repeats a failed key", async () => {
+    const { conty, fetch } = setup([apiError(409, "idempotency_key_failed")]);
+
+    const { error } = await conty.campaigns.create(body, { idempotencyKey: "order-43" });
+
     expect(error).toMatchObject({ status: 409, code: "idempotency_key_failed" });
-    expect(fetch).toHaveBeenCalledTimes(2);
-    expect(call(fetch, 1).headers.get("Idempotency-Key")).toBe("order-43");
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("does not retry a business rule error", async () => {
@@ -192,7 +206,7 @@ describe("campaigns writes", () => {
   });
 
   it("retries a status change sent with Idempotency-Key", async () => {
-    const { conty, fetch } = setup([apiError(502, "internal_error"), json({ id: CAMPAIGN_ID })]);
+    const { conty, fetch } = setup([apiError(429, "rate_limited"), json({ id: CAMPAIGN_ID })]);
 
     const { error } = await conty.campaigns.setStatus(
       CAMPAIGN_ID,
