@@ -187,7 +187,6 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 | `campaigns.attachBriefingFile(id, body, opts)` | `POST /campaigns/{id}/briefings/attachments`: anexa por link https ou base64 |
 | `uploads.create(body)` | `POST /uploads`: URL assinada para enviar o arquivo com `PUT` e o `upload_ref` |
 | `uploads.import(body, opts)` | `POST /uploads/import`: a API busca o link https ou recebe base64 e devolve o `upload_ref` |
-
 | `applications.approve(campaignId, applicationId, body?, opts)` | `POST /campaigns/{id}/applications/{application_id}/approve`: abre a missão com escopo, briefing e datas |
 | `applications.reject(campaignId, applicationId, body?, opts)` | `POST .../applications/{application_id}/reject` |
 | `applications.restore(campaignId, applicationId, body?, opts)` | `POST .../applications/{application_id}/restore` |
@@ -207,7 +206,6 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 | `missions.approvePending(body, opts)` / `bulkDeadline` / `bulkSend` / `bulkRemove` | `POST /missions/approve-pending`, `/missions/bulk/deadline`, `/bulk/send`, `/bulk/remove` (lote) |
 | `missionCombos.setStatus(id, body, opts)` | `POST /mission-combos/{id}/status`: aprova o combo ou pede alteração nas missões citadas |
 | `bulkJobs.get(id, params)` / `wait(id, { intervalMs, timeoutMs })` | `GET /bulk-jobs/{id}`: estado do lote e falhas por item |
-
 | `missions.shipProduct(id, body?, opts)` / `productShipment(id)` | `POST` e `GET /missions/{id}/product-shipment` |
 | `missions.setPostUrl(id, body, opts)` / `setPostedAt(id, body, opts)` | `PUT /missions/{id}/post-url`, `/posted-at` |
 | `missions.acceptPostCheck(id, body, opts)` / `postChecks.accept(body, opts)` | `POST /missions/{id}/post-check/accept`, `POST /post-checks/accept` |

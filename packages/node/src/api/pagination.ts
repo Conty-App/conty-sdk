@@ -16,7 +16,7 @@ export async function* paginateBy<T, R extends CursorPage, P extends { cursor?: 
     const { data, error } = await fetchPage({ ...params, cursor });
     if (error) throw error;
     yield* items(data);
-    if (!data.has_more || !data.next_cursor) return;
+    if (!data.has_more || !data.next_cursor || data.next_cursor === cursor) return;
     cursor = data.next_cursor;
   }
 }

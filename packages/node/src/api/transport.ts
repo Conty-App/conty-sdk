@@ -28,7 +28,7 @@ function headersFor(apiKey: string, request: ApiRequest): Record<string, string>
 
 async function readBody<T>(response: Response): Promise<T> {
   const text = await response.text();
-  if (response.status === 204 || text.trim() === "") return null as T;
+  if (response.status === 204) return null as T;
   if (PUBLIC_API.textContent.test(response.headers.get("Content-Type") ?? "")) return text as T;
   const parsed = parseJson(text);
   if (parsed === null) {
