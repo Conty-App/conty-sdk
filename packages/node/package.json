@@ -1,7 +1,7 @@
 {
   "name": "@conty/node",
   "version": "0.4.0",
-  "description": "Conty server SDK: send conversion events to the Conty Events API",
+  "description": "Conty server SDK: conversion events and the public campaigns API for integrations and AI agents",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -18,7 +18,12 @@
     "conversion",
     "attribution",
     "events",
-    "server"
+    "server",
+    "campaigns",
+    "creators",
+    "influencer-marketing",
+    "public-api",
+    "ai-agents"
   ],
   "engines": {
     "node": ">=20"

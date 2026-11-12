@@ -6,7 +6,7 @@
 
 # @conty/node
 
-SDK de servidor da [Conty](https://appconty.com) para a API de eventos de conversão.
+SDK de servidor da [Conty](https://appconty.com): eventos de conversão (`createConty`) e API pública de campanhas para integrações e agentes (`createContyApi`).
 
 <p>
   <a href="https://github.com/Conty-App/conty-sdk/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Conty-App/conty-sdk/actions/workflows/ci.yml/badge.svg"></a>
@@ -166,6 +166,22 @@ for await (const item of conty.campaigns.itemsAll(campaign.id, { stage: "interes
 
 Cada entrega diz a rede em `network` (`instagram`, `tiktok`, `youtube`, `x`, `ugc` ou `repost`) e o formato em `formats` (`reels`, `collab`, `stories`, `feed`, `video`, `long`, `shorts`, `post`, `thread`, `vertical`), e o `key` dela é o que `scope_options[].items[].deliverable_key` cita. Na leitura, a campanha traz as redes em `networks` e cada bloco traz `network` e `formats`.
 
+### `createContyApi(options)`
+
+| Opção | Padrão | |
+| --- | --- | --- |
+| `apiKey` | | Chave de API da marca, começa com `ck_live_`. Outra chave lança `ContyError` (`invalid_api_key`) na hora. |
+| `baseUrl` | `https://api.appconty.com/public/v1` | Base da API pública (ambiente de teste, proxy). |
+| `maxRetries` | `2` | Novas tentativas depois da primeira, só em `GET` e em requisição com `Idempotency-Key`. Inteiro de 0 a 10: fora disso, o valor é cortado, e um valor que não é número volta ao padrão. |
+| `timeoutMs` | `10000` | Tempo máximo de cada tentativa, em milissegundos. |
+| `onError` | | Chamado com cada `ContyError` devolvido (inclusive o `bulk_job_timeout` do `bulkJobs.wait`), para log centralizado. |
+| `fetch` | `fetch` global | Troque para testes ou para um `fetch` próprio. |
+| `clock` | `Date` | Objeto com `now()`, usado no `Retry-After` em data e no prazo do `bulkJobs.wait`. |
+| `randomId` | `crypto.randomUUID` | Gera a `Idempotency-Key` que falta. |
+| `sleep` | `setTimeout` | Espera entre tentativas e entre consultas do `bulkJobs.wait`. Útil para testes sem timer falso. |
+
+Resposta 2xx que não é JSON (nem CSV no `export`) volta como `error.code === "invalid_response"`, com o status e o `requestId`, e não é repetida: a escrita já foi feita.
+
 A API cria e edita acordos: entregas em `deliverables`, combinações de entregas em `scope_options` e textos em `briefings`. `kind` é opcional e só aceita `"agreement"`. Marca cujo `campaign_model` (em `me.get()`) não é acordo recebe 422 `unsupported_for_campaign_model`. O rascunho (`status: "draft"`) vai ao ar com `setStatus(id, { status: "review" })` ou `update(id, { status: "review" })`. Depois de publicado, os creators se candidatam pelo app: acompanhe as candidaturas pelo quadro (`stages` e `items`/`itemsAll` na etapa `interested`) ou pelo webhook da marca.
 
 | Método | Rota |
@@ -205,7 +221,7 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 | `missions.bulkStatus(campaignId, body, opts)` | `POST /campaigns/{id}/missions/bulk-status`: pede alteração ou recusa na hora |
 | `missions.approvePending(body, opts)` / `bulkDeadline` / `bulkSend` / `bulkRemove` | `POST /missions/approve-pending`, `/missions/bulk/deadline`, `/bulk/send`, `/bulk/remove` (lote) |
 | `missionCombos.setStatus(id, body, opts)` | `POST /mission-combos/{id}/status`: aprova o combo ou pede alteração nas missões citadas |
-| `bulkJobs.get(id, params)` / `wait(id, { intervalMs, timeoutMs })` | `GET /bulk-jobs/{id}`: estado do lote e falhas por item |
+| `bulkJobs.get(id, params)` / `wait(id, { intervalMs, timeoutMs })` / `failuresAll(id, params)` | `GET /bulk-jobs/{id}`: estado do lote e falhas por item (paginadas por `cursor`) |
 | `missions.shipProduct(id, body?, opts)` / `productShipment(id)` | `POST` e `GET /missions/{id}/product-shipment` |
 | `missions.setPostUrl(id, body, opts)` / `setPostedAt(id, body, opts)` | `PUT /missions/{id}/post-url`, `/posted-at` |
 | `missions.acceptPostCheck(id, body, opts)` / `postChecks.accept(body, opts)` | `POST /missions/{id}/post-check/accept`, `POST /post-checks/accept` |
@@ -239,7 +255,7 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 - **Idempotência.** As rotas em que a API exige a chave sempre mandam `Idempotency-Key` (a sua em `opts.idempotencyKey` ou uma gerada) e repetem a mesma chave nas retentativas, então um timeout nunca cria duas campanhas: `campaigns.create`, `renew`, `attachBriefingFile`, `uploads.import`, `applications.bulk`, `campaigns.creators.bulkExclude`, `missions.reinvite`, `approvePending`, `bulkDeadline`, `bulkSend`, `bulkRemove`, `missions.createCoupon`, `missions.comments.create`, `campaigns.coupons.pool.add`, `coupons.bulk`, `coupons.setCommissionBudget` e `campaigns.shortLinks.create`. As outras escritas que aceitam `opts` só mandam a chave, e só retentam, quando você passa `idempotencyKey`. `remove`, `validate` e `uploads.create` não têm chave e não são retentados.
 - **Chave que falhou.** Se uma requisição com `Idempotency-Key` cai em 5xx ou exceção no meio, a chave fica marcada como falha, porque a escrita pode ter tido efeito, e repetir com ela responde 409 `idempotency_key_failed` (por isso o SDK não repete escrita que recebeu 5xx: devolve o erro na hora). Confira o recurso (por exemplo, com `get` ou `list`) e, se for repetir, mande uma `idempotencyKey` nova. A mesma chave com outro corpo, outra rota, outra chave de API ou outro usuário responde 422 `idempotency_key_reused`.
 - **Retentativa** em 429 e falha de rede, só em `GET` e em requisição com `Idempotency-Key`, respeitando `Retry-After`. 5xx só é repetido em `GET`: numa escrita, a chave já ficou marcada como falha. Erro de regra (403, 409, 422) nunca é repetido.
-- **Nunca lança** erro de API: todo método devolve `{ data, error }`. A exceção é o `for await` dos métodos `*All` (`listAll`, `itemsAll`, `briefingsAll`, `salesAll`, `suggestionsAll`, `trackingAll` e os outros), que lança o `ContyError` da página que falhou.
+- **Nunca lança** erro de API: todo método devolve `{ data, error }`. A exceção é o `for await` dos métodos `*All` (`listAll`, `itemsAll`, `briefingsAll`, `salesAll`, `suggestionsAll`, `trackingAll`, `bulkJobs.failuresAll` e os outros), que lança o `ContyError` da página que falhou.
 
 ## Quadro da campanha
 
@@ -274,7 +290,7 @@ for await (const item of conty.campaigns.itemsAll(campaignId, { stage: "submitte
 
 - **Prazo da entrega.** A missão traz as datas em `dates`: `delivery_deadline_at` é o prazo da entrega, `script_deadline_at` o do roteiro e `change_deadline_at` o da alteração pedida. Mude com `missions.setDeadline` ou, em lote, `missions.bulkDeadline`.
 - **Peças.** Roteiro, capa e legenda são revisados um a um com `missions.reviewAsset(id, "script" | "cover" | "caption", { decision })`; o vídeo, com `approve`, `requestChanges` ou `reject`.
-- **Lotes.** `applications.bulk` com `approve`, `campaigns.creators.bulkExclude`, `missions.approvePending`, `bulkDeadline`, `bulkSend` e `bulkRemove` respondem 202 com `{ job_id, total }`. `bulkJobs.wait(job_id)` consulta até `done` ou `failed` (padrão: a cada 1 s, por até 2 min) e devolve `{ data, error }`: um lote `failed` vem em `data`, com as falhas por item em `failures`; passar do tempo devolve `error.code === "bulk_job_timeout"`. `missions.bulkStatus` e `applications.bulk` com `reject` respondem na hora.
+- **Lotes.** `applications.bulk` com `approve`, `campaigns.creators.bulkExclude`, `missions.approvePending`, `bulkDeadline`, `bulkSend` e `bulkRemove` respondem 202 com `{ job_id, total }`. `bulkJobs.wait(job_id)` consulta até `done` ou `failed` (padrão: a cada 1 s, por até 2 min) e devolve `{ data, error }`: um lote `failed` vem em `data`, com as falhas por item em `failures`; passar do tempo devolve `error.code === "bulk_job_timeout"`. O `wait` traz só a primeira página de `failures`: quando `next_cursor` vem preenchido, percorra todas com `for await (const failure of conty.bulkJobs.failuresAll(job_id))`, que lança o `ContyError` da página que falhou. `missions.bulkStatus` e `applications.bulk` com `reject` respondem na hora.
 
 ```ts
 const { data: accepted, error } = await conty.missions.bulkSend({ mission_ids: missionIds, briefing_id: briefingId });
