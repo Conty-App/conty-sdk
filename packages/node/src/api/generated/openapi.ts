@@ -11371,7 +11371,7 @@ export interface components {
              */
             name: string;
             /**
-             * @description Bio do perfil.
+             * @description Bio do perfil. Telefone, e-mail e link ou número de WhatsApp/Telegram escritos na bio saem substituídos por "[contato removido]".
              * @example Criadora de conteúdo de beleza.
              */
             biography: string | null;
@@ -11391,7 +11391,7 @@ export interface components {
              */
             age: number | null;
             /**
-             * @description Profissão.
+             * @description Profissão. Contato escrito no campo sai como "[contato removido]".
              * @example Maquiadora
              */
             profession: string | null;
@@ -11427,7 +11427,7 @@ export interface components {
              */
             instagram_business_category: string | null;
             /**
-             * @description Link do portfólio.
+             * @description Link do portfólio. Nulo quando o link é de contato (WhatsApp, Telegram, `mailto:`, `tel:` ou e-mail).
              * @example https://portfolio.appconty.com/maria
              */
             portfolio_url: string | null;
