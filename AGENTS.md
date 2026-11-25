@@ -37,7 +37,7 @@ packages/node/src/         client/ (conty.ts, options.ts), errors/, event/, tran
 packages/node/src/api/     createContyApi: client.ts, transport.ts, request.ts (createWriter), pagination.ts, url.ts,
                            constants.ts (PUBLIC_API), generated/ (openapi.ts), uma pasta por recurso (campaigns/,
                            applications/, missions/, mission-combos/, bulk-jobs/, post-checks/, conversion-events/,
-                           uploads/, me/)
+                           uploads/, me/, brands/, creators/)
 packages/react-native/src/ client/, linking/
 packages/*/examples/       exemplos mínimos, fora dos workspaces, do build, do typecheck e do npm (cada um instala o pacote por file:../..)
 test/fixtures/             event-schema.ts (cópia do schema de eventos), openapi.json (cópia do contrato da API pública)
@@ -70,4 +70,4 @@ Pasta por domínio, mesmo nome do core quando o conceito é o mesmo. Cada pasta 
 
 ## Release
 
-Ainda não é automatizado. Não há job de publish na CI. A publicação no npm (`@conty/*`) é manual, feita por quem tem acesso ao escopo `@conty`, depois de bump de versão no `package.json` do pacote.
+Automatizado por `.github/workflows/release.yml`. Publicar um GitHub Release (ou rodar o workflow à mão) roda lint, typecheck, testes e build e publica no npm por trusted publishing cada pacote (`node`, `web`, `react-native`) cuja versão do `package.json` ainda não existe no npm; versão já publicada é pulada. Para lançar: bump de versão no `package.json` do pacote no PR e, depois do merge, publicar o Release.

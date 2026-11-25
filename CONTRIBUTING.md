@@ -73,7 +73,7 @@ Siga a seção "Pacote novo" do [AGENTS.md](AGENTS.md): `package.json` com `@con
 
 ## Release
 
-A publicação no npm é manual, feita por quem mantém o escopo `@conty`: bump de versão no `package.json` do pacote, `npm run build` e `npm publish -w @conty/<pacote>`.
+Faça o bump de versão no `package.json` do pacote no PR. Depois do merge, publicar um GitHub Release dispara `.github/workflows/release.yml`, que publica no npm (trusted publishing) só as versões que ainda não existem lá.
 
 ## Bugs e segurança
 

@@ -112,7 +112,7 @@ Quem valida o evento é a API: um campo fora da regra volta como `error` com sta
 
 ## API pública: campanhas
 
-`createContyApi` fala com a API pública da Conty (`/public/v1`) usando a **chave de API da marca** (`ck_live_...`, criada no painel em Desenvolvedores). É outra chave, diferente da `cev_` dos eventos. Só no servidor.
+`createContyApi` fala com a API pública da Conty (`/public/v1`) usando a **chave de API da marca ou da agência** (`ck_live_...`, criada no painel em Desenvolvedores). É outra chave, diferente da `cev_` dos eventos. Só no servidor.
 
 ```ts
 import { createContyApi } from "@conty/node";
@@ -170,7 +170,8 @@ Cada entrega diz a rede em `network` (`instagram`, `tiktok`, `youtube`, `x`, `ug
 
 | Opção | Padrão | |
 | --- | --- | --- |
-| `apiKey` | | Chave de API da marca, começa com `ck_live_`. Outra chave lança `ContyError` (`invalid_api_key`) na hora. |
+| `apiKey` | | Chave de API da marca ou da agência, começa com `ck_live_`. Outra chave lança `ContyError` (`invalid_api_key`) na hora. |
+| `brandId` | | Com chave de agência, id do cliente em que a chave opera (vai no cabeçalho `X-Conty-Brand-Id`). Veja [Chave de agência](#chave-de-agência). String vazia lança `ContyError` (`invalid_brand_id`). |
 | `baseUrl` | `https://api.appconty.com/public/v1` | Base da API pública (ambiente de teste, proxy). |
 | `maxRetries` | `2` | Novas tentativas depois da primeira, só em `GET` e em requisição com `Idempotency-Key`. Inteiro de 0 a 10: fora disso, o valor é cortado, e um valor que não é número volta ao padrão. |
 | `timeoutMs` | `10000` | Tempo máximo de cada tentativa, em milissegundos. |
@@ -187,6 +188,9 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 | Método | Rota |
 | --- | --- |
 | `me.get()` | `GET /me`: marca dona da chave, escopos da chave e `campaign_model` |
+| `brands.list(params)` / `listAll(params)` | `GET /brands`: clientes da agência dona da chave |
+| `creators.search(params)` / `searchAll(params)` | `GET /creators/search`: busca de creators da base |
+| `forBrand(brandId)` | Mesmo cliente, operando no cliente `brandId` da agência |
 | `campaigns.list(params)` / `listAll(params)` | `GET /campaigns` (filtro `status`, busca `q`) |
 | `campaigns.get(id)` | `GET /campaigns/{id}` |
 | `campaigns.stages(id, params)` | `GET /campaigns/{id}/stages` |
@@ -255,7 +259,42 @@ A API cria e edita acordos: entregas em `deliverables`, combinações de entrega
 - **Idempotência.** As rotas em que a API exige a chave sempre mandam `Idempotency-Key` (a sua em `opts.idempotencyKey` ou uma gerada) e repetem a mesma chave nas retentativas, então um timeout nunca cria duas campanhas: `campaigns.create`, `renew`, `attachBriefingFile`, `uploads.import`, `applications.bulk`, `campaigns.creators.bulkExclude`, `missions.reinvite`, `approvePending`, `bulkDeadline`, `bulkSend`, `bulkRemove`, `missions.createCoupon`, `missions.comments.create`, `campaigns.coupons.pool.add`, `coupons.bulk`, `coupons.setCommissionBudget` e `campaigns.shortLinks.create`. As outras escritas que aceitam `opts` só mandam a chave, e só retentam, quando você passa `idempotencyKey`. `remove`, `validate` e `uploads.create` não têm chave e não são retentados.
 - **Chave que falhou.** Se uma requisição com `Idempotency-Key` cai em 5xx ou exceção no meio, a chave fica marcada como falha, porque a escrita pode ter tido efeito, e repetir com ela responde 409 `idempotency_key_failed` (por isso o SDK não repete escrita que recebeu 5xx: devolve o erro na hora). Confira o recurso (por exemplo, com `get` ou `list`) e, se for repetir, mande uma `idempotencyKey` nova. A mesma chave com outro corpo, outra rota, outra chave de API ou outro usuário responde 422 `idempotency_key_reused`.
 - **Retentativa** em 429 e falha de rede, só em `GET` e em requisição com `Idempotency-Key`, respeitando `Retry-After`. 5xx só é repetido em `GET`: numa escrita, a chave já ficou marcada como falha. Erro de regra (403, 409, 422) nunca é repetido.
-- **Nunca lança** erro de API: todo método devolve `{ data, error }`. A exceção é o `for await` dos métodos `*All` (`listAll`, `itemsAll`, `briefingsAll`, `salesAll`, `suggestionsAll`, `trackingAll`, `bulkJobs.failuresAll` e os outros), que lança o `ContyError` da página que falhou.
+- **Nunca lança** erro de API: todo método devolve `{ data, error }`. A exceção é o `for await` dos métodos `*All` (`listAll`, `searchAll`, `itemsAll`, `briefingsAll`, `salesAll`, `suggestionsAll`, `trackingAll`, `bulkJobs.failuresAll` e os outros), que lança o `ContyError` da página que falhou.
+
+## Chave de agência
+
+A chave de uma agência opera nos clientes dela. Diga o cliente em `brandId` (ou troque com `forBrand`, que reaproveita a mesma conexão e o mesmo retry): o SDK manda o id no cabeçalho `X-Conty-Brand-Id` em toda rota de marca. `me.get()` e `brands.list()` nunca levam o cabeçalho.
+
+```ts
+const agency = createContyApi({ apiKey: process.env.CONTY_AGENCY_KEY! });
+
+const { data: brands } = await agency.brands.list();
+// { data: [{ id: "1111...", name: "Marca Exemplo", status: "active" }], has_more: false, next_cursor: null }
+
+const client = agency.forBrand(brands!.data[0].id);
+await client.campaigns.list();
+```
+
+Chave de agência sem `brandId` recebe 403 nas rotas de marca. Os erros do contexto vêm em `error.code`: `brand_not_managed` (a marca não é cliente da agência), `brand_blocked` (marca bloqueada) e `agency_only` (chave de marca em `brands.list()` ou com o id de outra marca).
+
+## Busca de creators
+
+`creators.search` busca creators da base com os mesmos filtros da aba Creators do painel. Listas vão separadas por vírgula. Com chave de agência, roda no cliente do `brandId`.
+
+```ts
+const { data, error } = await conty.creators.search({
+  niches: ["moda"],
+  platforms: ["instagram"],
+  followers_min: 10_000,
+  sort: "followers_desc",
+});
+// GET /creators/search?niches=moda&platforms=instagram&followers_min=10000&sort=followers_desc
+// { data: [{ id, name, followers: 48200, networks: [...], ... }], has_more: true, next_cursor: "MXwy...", total: 230 }
+
+for await (const creator of conty.creators.searchAll({ niches: ["moda"] })) console.log(creator.name);
+```
+
+`limit` vai de 1 a 50 (padrão 20) e a paginação é por `cursor`, até 500 resultados por busca; `total` traz o número real. O item não traz dado de contato. Sem o módulo de busca liberado para a empresa, a API responde 403 `creator_search_disabled` em `{ error }`; a busca tem limite de requisições próprio (429, com retentativa).
 
 ## Quadro da campanha
 
