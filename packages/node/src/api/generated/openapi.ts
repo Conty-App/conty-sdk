@@ -79,6 +79,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar clientes da agência
+         * @description Lista as marcas vinculadas à agência dona da chave, da mais nova para a mais antiga, sem as excluídas. O id de cada uma vai no cabeçalho X-Conty-Brand-Id para operar como ela. Ignora o cabeçalho X-Conty-Brand-Id. Chave de marca responde 403 agency_only.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Quantos itens por página, de 1 a 100. Padrão 20. */
+                    limit?: number;
+                    /** @description Cursor opaco devolvido em next_cursor pela página anterior. */
+                    cursor?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Página de clientes. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BrandList"];
+                    };
+                };
+                /** @description invalid_api_key: Chave de API ausente, inválida ou revogada. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. agency_only: Só a chave de uma agência pode usar este recurso. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description validation_failed: Os dados enviados são inválidos. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description rate_limited: Limite de requisições atingido. Tente de novo em instantes. */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description internal_error: Erro interno. Tente de novo em instantes. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/coupons": {
         parameters: {
             query?: never;
@@ -110,7 +199,10 @@ export interface paths {
                     /** @description Código do cupom. Espaços nas pontas saem e as letras viram maiúsculas. */
                     code?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -134,7 +226,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -183,6 +275,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -211,7 +305,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -287,7 +381,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do cupom. */
                     id: string;
@@ -314,7 +411,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -373,7 +470,10 @@ export interface paths {
         patch: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do cupom. */
                     id: string;
@@ -404,7 +504,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -478,7 +578,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do cupom. */
                     id: string;
@@ -509,7 +612,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -587,7 +690,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do cupom. */
                     id: string;
@@ -614,7 +720,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -691,7 +797,10 @@ export interface paths {
         put: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do cupom. */
                     id: string;
@@ -733,7 +842,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -806,7 +915,10 @@ export interface paths {
                     /** @description Cursor opaco devolvido em next_cursor pela página anterior. */
                     cursor?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do cupom. */
                     id: string;
@@ -833,7 +945,166 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description not_found: Recurso não encontrado. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description validation_failed: Os dados enviados são inválidos. */
+                422: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description rate_limited: Limite de requisições atingido. Tente de novo em instantes. */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description internal_error: Erro interno. Tente de novo em instantes. */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/creators/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Buscar creators
+         * @description Busca creators da base com a mesma seleção, ordenação e exclusões da aba Creators do painel da marca. Com chave de agência, a busca roda no cliente indicado em X-Conty-Brand-Id. A paginação é por cursor, até 500 resultados navegáveis por busca; total traz o número real. O item traz só o perfil público e as métricas, sem dado de contato. Precisa do módulo de busca de creators liberado pela Conty para a empresa dona da chave e tem limite de requisições próprio.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Nome, @ ou link do perfil do creator. */
+                    q?: string;
+                    /** @description Redes do creator, separadas por vírgula ou repetidas. */
+                    platforms?: ("instagram" | "tiktok" | "x" | "youtube")[];
+                    /** @description UF do creator. */
+                    state?: string;
+                    /** @description Cidade do creator. */
+                    city?: string;
+                    /** @description País do creator, em duas letras. Sem país no cadastro, vale BR. */
+                    country?: string;
+                    /** @description Localizações do creator, qualquer uma delas. PAÍS:UF:Cidade, separados por vírgula ou repetidos, até 20. UF e cidade são opcionais; fora do Brasil, sem UF (PT::Lisboa). */
+                    locations?: string[];
+                    /** @description Nichos do creator, separados por vírgula ou repetidos. */
+                    niches?: ("moda" | "beleza" | "fitness" | "esportes" | "bem_estar" | "gastronomia" | "viagens" | "lifestyle" | "casa" | "diy" | "sustentabilidade" | "maternidade" | "familia" | "pets" | "tecnologia" | "games" | "automotivo" | "educacao" | "livros" | "negocios" | "financas" | "humor" | "cinema" | "musica" | "arte" | "fotografia" | "religiao")[];
+                    /** @description Gênero do creator. */
+                    gender?: "feminino" | "masculino" | "nao_binario" | "prefiro_nao_dizer";
+                    /** @description Trecho da profissão que o creator declarou. */
+                    profession?: string;
+                    /** @description Trecho da ocupação que a análise da Conty identificou no perfil, de 2 a 60 caracteres. Creator sem análise fica de fora. */
+                    occupation?: string;
+                    /** @description Mínimo de seguidores. */
+                    followers_min?: number;
+                    /** @description Máximo de seguidores. */
+                    followers_max?: number;
+                    /** @description Idade mínima, de 13 a 120. */
+                    age_min?: number;
+                    /** @description Idade máxima, de 13 a 120. */
+                    age_max?: number;
+                    /** @description Engajamento mediano mínimo no Instagram, em percentual (2 = 2%). Creator sem análise fica de fora. */
+                    min_engagement_rate?: number;
+                    /** @description Fatia máxima de posts publicitários, de 0 a 1 (0.3 = até 30% de publis). */
+                    max_sponsored_rate?: number;
+                    /** @description Níveis de brand safety aceitos, separados por vírgula ou repetidos. Com o módulo de brand safety do Conty Shield, vale o nível já revisado pela equipe da Conty; sem ele, o nível que a análise apontou. Creator sem análise fica de fora. */
+                    brand_safety?: ("safe" | "attention" | "risk")[];
+                    /** @description Gênero predominante da audiência. */
+                    audience_gender?: "female" | "male" | "balanced";
+                    /** @description Tipo da conta: pessoa, negócio ou misto. */
+                    profile_type?: "pessoa" | "negocio" | "misto";
+                    /** @description true tira quem tem a audiência suspeita pelo Conty Shield. Creator sem dado de audiência continua. Só vale com o módulo de audiência do Conty Shield liberado; sem ele, é ignorado. */
+                    exclude_suspect_audience?: boolean;
+                    /** @description true tira quem já participa de alguma campanha no ar da marca: convidado, fazendo, aprovado ou recusado. */
+                    exclude_in_brand_campaigns?: boolean;
+                    /** @description Ids de campanhas da marca, no ar ou encerradas, cujos participantes ficam de fora, até 20. Use o id da campanha (o do acordo, quando há). Id de outra marca não exclui ninguém. Com exclude_in_brand_campaigns, é ignorado. */
+                    exclude_campaign_ids?: string[];
+                    /** @description true tira quem já está em alguma lista de creators da marca. */
+                    exclude_in_any_list?: boolean;
+                    /** @description Ids de listas de creators da marca cujos membros ficam de fora, até 50. Os ids vêm das listas do painel. Lista de outra marca não exclui ninguém. Com exclude_in_any_list, é ignorado. */
+                    exclude_list_ids?: string[];
+                    /** @description Nichos que tiram o creator da busca, separados por vírgula ou repetidos. */
+                    exclude_niches?: ("moda" | "beleza" | "fitness" | "esportes" | "bem_estar" | "gastronomia" | "viagens" | "lifestyle" | "casa" | "diy" | "sustentabilidade" | "maternidade" | "familia" | "pets" | "tecnologia" | "games" | "automotivo" | "educacao" | "livros" | "negocios" | "financas" | "humor" | "cinema" | "musica" | "arte" | "fotografia" | "religiao")[];
+                    /** @description Localizações que tiram o creator da busca. PAÍS:UF:Cidade, separados por vírgula ou repetidos, até 20. UF e cidade são opcionais; fora do Brasil, sem UF (PT::Lisboa). */
+                    exclude_locations?: string[];
+                    /** @description Gêneros que tiram o creator da busca, separados por vírgula ou repetidos. */
+                    exclude_genders?: ("feminino" | "masculino" | "nao_binario" | "prefiro_nao_dizer")[];
+                    /** @description Id de uma comunidade da marca, do painel. Tira quem já é membro ou convidado dela. Comunidade que não existe ou que a chave não acessa responde 404. */
+                    exclude_community_id?: string;
+                    /** @description Ordenação. Padrão relevance. */
+                    sort?: "relevance" | "pro_first" | "rating_desc" | "followers_desc" | "followers_asc";
+                    /** @description De 1 a 50. Padrão 20. */
+                    limit?: number;
+                    /** @description next_cursor da página anterior. */
+                    cursor?: string;
+                };
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Página de creators. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CreatorSearchPage"];
+                    };
+                };
+                /** @description invalid_api_key: Chave de API ausente, inválida ou revogada. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. creator_search_disabled: A busca de creators pela API não está liberada para esta conta. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -904,7 +1175,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -932,7 +1206,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -995,7 +1269,10 @@ export interface paths {
                     /** @description Quantos creators a campanha quer contratar. */
                     creators_limit?: number;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -1019,7 +1296,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1088,7 +1365,10 @@ export interface paths {
                     /** @description Busca pelo nome da campanha. */
                     q?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -1112,7 +1392,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1161,6 +1441,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -1198,7 +1480,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1274,7 +1556,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -1301,7 +1586,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1357,7 +1642,10 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -1382,7 +1670,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1450,6 +1738,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -1499,7 +1789,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1576,6 +1866,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -1616,7 +1908,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1697,6 +1989,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -1737,7 +2031,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1813,7 +2107,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -1840,7 +2137,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -1916,7 +2213,10 @@ export interface paths {
                     /** @description Busca pelo título do briefing. */
                     q?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -1943,7 +2243,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2017,6 +2317,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -2048,7 +2350,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2129,6 +2431,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -2157,7 +2461,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2226,7 +2530,10 @@ export interface paths {
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -2254,7 +2561,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2315,7 +2622,10 @@ export interface paths {
                     /** @description Busca de creator (nome, @instagram, @tiktok). A contagem passa a contar só quem casa. */
                     q?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -2342,7 +2652,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2454,7 +2764,10 @@ export interface paths {
                     /** @description Em quantas dessas campanhas, no mínimo, o creator precisa estar. */
                     elsewhere_min?: number;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -2481,7 +2794,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2555,6 +2868,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -2588,7 +2903,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2678,6 +2993,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -2711,7 +3028,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2801,6 +3118,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -2841,7 +3160,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -2931,6 +3250,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -2964,7 +3285,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3058,6 +3379,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -3091,7 +3414,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3181,6 +3504,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -3214,7 +3539,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3304,6 +3629,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -3337,7 +3664,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3427,6 +3754,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -3460,7 +3789,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3550,6 +3879,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha (acordo). */
@@ -3583,7 +3914,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3669,6 +4000,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -3700,7 +4033,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3790,6 +4123,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -3821,7 +4156,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -3911,6 +4246,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -3939,7 +4276,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4029,6 +4366,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -4057,7 +4396,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4147,6 +4486,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -4175,7 +4516,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4265,6 +4606,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -4293,7 +4636,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4383,6 +4726,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -4414,7 +4759,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4504,6 +4849,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -4535,7 +4882,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4625,6 +4972,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -4656,7 +5005,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4746,6 +5095,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -4779,7 +5130,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4873,6 +5224,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -4904,7 +5257,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -4990,6 +5343,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id do combo de missões. */
@@ -5021,7 +5376,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5115,6 +5470,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -5146,7 +5503,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5232,6 +5589,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -5272,7 +5631,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5362,6 +5721,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -5393,7 +5754,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5478,7 +5839,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -5505,7 +5869,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5579,6 +5943,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -5610,7 +5976,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5695,7 +6061,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -5722,7 +6091,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5778,7 +6147,10 @@ export interface paths {
         delete: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -5803,7 +6175,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -5892,6 +6264,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -5920,7 +6294,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6005,7 +6379,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -6032,7 +6409,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6090,6 +6467,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -6121,7 +6500,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6202,7 +6581,7 @@ export interface paths {
         get?: never;
         /**
          * Informar o link do post
-         * @description Grava o link do post publicado pela rede, pela mesma conferência do painel: o link pode valer na hora (state confirmed) ou ficar em conferência (state pending, com job_id); o resultado aparece em post_urls da missão. Só depois da entrega aprovada: antes responde 409 invalid_transition com details[].code mission_not_approved; link já confirmado ou em conferência também é 409 invalid_transition, com details[].code link_already_confirmed ou confirmation_in_progress. Link inválido responde 422 invalid_url; de outra rede, 422 platform_mismatch. Conferência fora do ar, 503 check_unavailable. Em marca assistida é só da agência (403 forbidden). Missão de outra marca ou inexistente responde 404 sem gravar nada; missão de campanha avulsa legada responde 422 unsupported_for_campaign_model; missão removida responde 409 invalid_transition.
+         * @description Grava o link do post publicado pela rede, pela mesma conferência do painel: o link pode valer na hora (state confirmed) ou ficar em conferência (state pending, com job_id); o resultado aparece em post_urls da missão. Só depois da entrega aprovada: antes responde 409 invalid_transition com details[].code mission_not_approved; link já confirmado ou em conferência também é 409 invalid_transition, com details[].code link_already_confirmed ou confirmation_in_progress. Link inválido responde 422 invalid_url; de outra rede, 422 platform_mismatch; link do Instagram de outro tipo que a entrega (Reels ou post numa entrega só de Stories, Story numa entrega de Reels ou post), 422 validation_failed com details[].code post_url_kind_mismatch. Conferência fora do ar, 503 check_unavailable. Em marca assistida é só da agência (403 forbidden). Missão de outra marca ou inexistente responde 404 sem gravar nada; missão de campanha avulsa legada responde 422 unsupported_for_campaign_model; missão removida responde 409 invalid_transition.
          */
         put: {
             parameters: {
@@ -6210,6 +6589,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -6241,7 +6622,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6340,6 +6721,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -6371,7 +6754,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6462,6 +6845,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -6493,7 +6878,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6583,6 +6968,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -6614,7 +7001,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6704,7 +7091,10 @@ export interface paths {
                     /** @description Últimos N comentários, até 50. */
                     limit?: number;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -6731,7 +7121,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6789,6 +7179,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -6820,7 +7212,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -6948,7 +7340,10 @@ export interface paths {
                     /** @description Colunas, separadas por vírgula. Ausente traz as colunas padrão do painel. Coluna que o dono da marca não vê fica de fora. Aceitas: creator_name, stage, campaign, email, phone, instagram, tiktok, youtube, instagram_followers, tiktok_followers, youtube_subscribers, engagement_rate, avg_views, average_score, city, state, postal_code, address, cluster, niches, profession, lists, scope_option, amount, coupon, briefing, entered_at, expires_at, invite_deadline, started_at, script_deadline, delivery_deadline, submitted_at, approved_at, rejected_at, posted_at, production_status, post_link, ad_code, views, likes, comments. */
                     fields?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -6976,7 +7371,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. forbidden: Esta chave não tem acesso a campanhas. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. forbidden: Esta chave não tem acesso a campanhas. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7050,7 +7445,10 @@ export interface paths {
                     limit?: number;
                     offset?: number | null;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -7077,7 +7475,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7135,6 +7533,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -7166,7 +7566,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7256,6 +7656,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -7287,7 +7689,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7377,6 +7779,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -7417,7 +7821,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. coupons_disabled: O cupom por creator não está liberado para esta conta. coupon_commission_budget_forbidden: Você não tem permissão para definir a verba da comissão. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7512,7 +7916,10 @@ export interface paths {
                     /** @description assigned: só cupons com creator. unassigned: só os do pool. */
                     assignment?: "all" | "assigned" | "unassigned";
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -7539,7 +7946,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. coupons_disabled: O cupom por creator não está liberado para esta conta. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. coupons_disabled: O cupom por creator não está liberado para esta conta. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7611,7 +8018,10 @@ export interface paths {
                     /** @description Versão anterior do roteiro, do histórico de versões. Sem ela, vale a atual. */
                     version_id?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -7638,7 +8048,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7707,7 +8117,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da missão. */
                     id: string;
@@ -7734,7 +8147,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7808,6 +8221,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -7839,7 +8254,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -7929,6 +8344,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da missão. */
@@ -7956,7 +8373,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8046,6 +8463,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -8073,7 +8492,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8158,7 +8577,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. */
                     id: string;
@@ -8187,7 +8609,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8263,7 +8685,10 @@ export interface paths {
                     /** @description Busca pelo nome ou @ do creator. */
                     q?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -8290,7 +8715,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8363,6 +8788,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -8394,7 +8821,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8485,6 +8912,8 @@ export interface paths {
                 header: {
                     /** @description Obrigatória nesta rota. Chave de idempotência, de 1 a 255 caracteres: repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key": string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -8525,7 +8954,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8614,7 +9043,10 @@ export interface paths {
                     /** @description next_cursor da página anterior. */
                     cursor?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -8641,7 +9073,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8713,7 +9145,10 @@ export interface paths {
                     /** @description Busca de creator: nome, @instagram ou @tiktok. */
                     q?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -8740,7 +9175,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8832,7 +9267,10 @@ export interface paths {
                     /** @description Só creators com este briefing da campanha. */
                     briefing_id?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -8859,7 +9297,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -8955,7 +9393,10 @@ export interface paths {
                     /** @description Quantos itens pular. */
                     offset?: number | null;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -8982,7 +9423,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9051,7 +9492,10 @@ export interface paths {
         get: {
             parameters: {
                 query?: never;
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -9078,7 +9522,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9135,6 +9579,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
@@ -9166,7 +9612,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. assisted_access_denied: A agência que cuida desta marca não liberou esta ação. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9259,7 +9705,10 @@ export interface paths {
                     /** @description Postados até este dia (AAAA-MM-DD). */
                     posted_to?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -9286,7 +9735,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9362,7 +9811,10 @@ export interface paths {
                     /** @description Postados até este dia (AAAA-MM-DD). */
                     posted_to?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -9389,7 +9841,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9478,7 +9930,10 @@ export interface paths {
                     min_views?: number | null;
                     max_views?: number | null;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -9505,7 +9960,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9583,7 +10038,10 @@ export interface paths {
                     /** @description Só entregas destas redes, separadas por vírgula (instagram, tiktok, youtube, x, ugc, repost). */
                     networks?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     id: string;
                     creator_id: string;
@@ -9610,7 +10068,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9686,7 +10144,10 @@ export interface paths {
                     /** @description Quantos itens pular. */
                     offset?: number | null;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -9713,7 +10174,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9787,7 +10248,10 @@ export interface paths {
                     /** @description Quantos itens pular. */
                     offset?: number | null;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da campanha. Id de um bloco de campanha com kind agreement responde 404. */
                     id: string;
@@ -9814,7 +10278,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9887,6 +10351,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path?: never;
                 cookie?: never;
@@ -9915,7 +10381,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. module_disabled: Este recurso do painel não está ligado para esta marca. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. insufficient_scope: Esta chave não tem o escopo que a ação exige. module_disabled: Este recurso do painel não está ligado para esta marca. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -9997,7 +10463,10 @@ export interface paths {
                     /** @description Falhas por página. */
                     limit?: number;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id do lote, o job_id da resposta 202. */
                     id: string;
@@ -10024,7 +10493,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -10098,6 +10567,8 @@ export interface paths {
                 header?: {
                     /** @description Chave de idempotência, de 1 a 255 caracteres. Repetir a mesma chave com o mesmo corpo em até 24 horas devolve a primeira resposta, com Idempotent-Replayed: true, sem executar de novo. */
                     "idempotency-key"?: string;
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
                 };
                 path: {
                     /** @description Id da campanha, o mesmo de GET /campaigns/{id}. */
@@ -10140,7 +10611,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. chat_disabled: O chat pela API não está liberado para esta marca. insufficient_scope: Esta chave não tem o escopo que a ação exige. chat_forbidden: Esta marca não pode conversar direto com o creator. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. chat_disabled: O chat pela API não está liberado para esta marca. insufficient_scope: Esta chave não tem o escopo que a ação exige. chat_forbidden: Esta marca não pode conversar direto com o creator. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -10229,7 +10700,10 @@ export interface paths {
                     /** @description true traz só as conversas em que a última mensagem é do creator. false traz as outras, inclusive as sem mensagem. */
                     awaiting_reply?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -10253,7 +10727,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. chat_disabled: O chat pela API não está liberado para esta marca. chat_forbidden: Esta marca não pode conversar direto com o creator. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. chat_disabled: O chat pela API não está liberado para esta marca. chat_forbidden: Esta marca não pode conversar direto com o creator. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -10327,7 +10801,10 @@ export interface paths {
                     /** @description Cursor opaco devolvido em next_cursor pela página anterior. */
                     cursor?: string;
                 };
-                header?: never;
+                header?: {
+                    /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+                    "X-Conty-Brand-Id"?: components["parameters"]["BrandContextHeader"];
+                };
                 path: {
                     /** @description Id da conversa, o id de GET /conversations. */
                     id: string;
@@ -10354,7 +10831,7 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorEnvelope"];
                     };
                 };
-                /** @description open_api_disabled: A API pública não está liberada para esta conta. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. chat_disabled: O chat pela API não está liberado para esta marca. chat_forbidden: Esta marca não pode conversar direto com o creator. */
+                /** @description open_api_disabled: A API pública não está liberada para esta conta. brand_not_managed: Esta marca não é cliente da agência dona da chave. agency_only: Só a chave de uma agência pode usar este recurso. brand_blocked: Esta marca está bloqueada. plan_required: A marca precisa de um plano ativo para usar a API pública. forbidden: Esta chave não tem acesso a campanhas. chat_disabled: O chat pela API não está liberado para esta marca. chat_forbidden: Esta marca não pode conversar direto com o creator. */
                 403: {
                     headers: {
                         [name: string]: unknown;
@@ -10413,6 +10890,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * Format: uuid
+         * @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id.
+         * @example 11111111-1111-4111-8111-111111111111
+         */
+        BrandContextHeader: string;
         Me: {
             /** @description Marca dona da chave. */
             enterprise: {
@@ -10488,7 +10971,7 @@ export interface components {
                  * @description Código estável do erro, para tratar no seu código.
                  * @enum {string}
                  */
-                code: "end_date_required" | "payment_type_unavailable" | "brand_profile_incomplete" | "insufficient_balance" | "insufficient_free_balance" | "credit_line_overdue" | "billing_overdue" | "blocking_missions" | "force_close_unavailable" | "campaign_fields_locked" | "client_locked" | "managed_by_group" | "standalone_dates_use_renew" | "standalone_add_platform" | "invalid_transition" | "invalid_status" | "already_deleted" | "scope_option_in_use" | "scope_option_locked" | "scope_total_over_budget" | "scope_value_locked" | "invalid_briefing" | "briefing_in_use" | "assisted_access_denied" | "budget_exceeded" | "barter_item_required" | "barter_product_not_allowed" | "campaign_budget_below_minimum" | "platforms_limit" | "repost_requires_other_delivery" | "invalid_repost_source" | "group_blocks_required" | "group_block_in_use" | "group_block_in_scope_option" | "review_chain_unavailable" | "affiliate_platform_commission_mismatch" | "affiliate_external_coupon_commission" | "external_payment_acceptance_required" | "affiliate_fields_not_allowed" | "affiliate_commission_required" | "affiliate_payer_required" | "affiliate_payment_terms_not_allowed" | "coupon_commission_budget_forbidden" | "brand_account_rejected" | "brand_tier_locked" | "usage_rights_fee_legacy_balance_only" | "invalid_date" | "invalid_delivery" | "delivery_before_script" | "awaiting_review" | "approval_posted_at_required" | "not_submitted" | "not_applicable" | "not_adjustable" | "force_closed_mission" | "campaign_finished" | "mission_not_removable" | "already_sent" | "already_invited" | "deadline_required" | "script_deadline_required" | "invalid_deadline" | "rejection_reason_required" | "adjust_not_allowed" | "adjust_requires_approval" | "adjust_approve_disabled" | "invalid_scope_option" | "invalid_briefing_assignment" | "payment_amount_not_editable" | "proposed_deadline_not_adjustable" | "proposed_delivery_not_editable" | "proposed_amount_not_adjustable" | "scope_amount_not_increased" | "scope_amount_reserved" | "scope_amount_already_approved" | "no_product" | "shipping_disabled" | "already_received" | "invalid_url" | "platform_mismatch" | "check_unavailable" | "approval_posted_at_in_past" | "mention_not_allowed" | "invalid_api_key" | "open_api_disabled" | "plan_required" | "coupons_disabled" | "chat_disabled" | "communities_disabled" | "broadcast_disabled" | "ads_disabled" | "ads_forbidden" | "insufficient_scope" | "chat_forbidden" | "forbidden" | "module_disabled" | "not_found" | "coupon_exists" | "coupon_code_taken" | "coupon_canceled" | "coupon_assigned" | "coupon_mode_campaign" | "conversation_closed" | "idempotency_in_progress" | "idempotency_key_failed" | "coupon_campaign_mismatch" | "sale_occurred_at_out_of_range" | "validation_failed" | "idempotency_key_required" | "idempotency_key_reused" | "creator_not_in_campaign" | "mission_closed" | "delivery_date_required" | "perpetual_term_unavailable" | "unsupported_for_campaign_model" | "invalid_delivery_format" | "invalid_upload_ref" | "rate_limited" | "internal_error";
+                code: "end_date_required" | "payment_type_unavailable" | "brand_profile_incomplete" | "insufficient_balance" | "insufficient_free_balance" | "credit_line_overdue" | "billing_overdue" | "blocking_missions" | "force_close_unavailable" | "campaign_fields_locked" | "client_locked" | "managed_by_group" | "standalone_dates_use_renew" | "standalone_add_platform" | "invalid_transition" | "invalid_status" | "already_deleted" | "scope_option_in_use" | "scope_option_locked" | "scope_total_over_budget" | "scope_value_locked" | "invalid_briefing" | "briefing_in_use" | "assisted_access_denied" | "budget_exceeded" | "barter_item_required" | "barter_product_not_allowed" | "campaign_budget_below_minimum" | "platforms_limit" | "repost_requires_other_delivery" | "invalid_repost_source" | "group_blocks_required" | "group_block_in_use" | "group_block_in_scope_option" | "review_chain_unavailable" | "affiliate_platform_commission_mismatch" | "affiliate_external_coupon_commission" | "external_payment_acceptance_required" | "affiliate_fields_not_allowed" | "affiliate_commission_required" | "affiliate_payer_required" | "affiliate_payment_terms_not_allowed" | "coupon_commission_budget_forbidden" | "brand_account_rejected" | "brand_tier_locked" | "usage_rights_fee_legacy_balance_only" | "invalid_date" | "invalid_delivery" | "delivery_before_script" | "awaiting_review" | "approval_posted_at_required" | "not_submitted" | "not_applicable" | "not_adjustable" | "force_closed_mission" | "campaign_finished" | "mission_not_removable" | "already_sent" | "already_invited" | "deadline_required" | "script_deadline_required" | "invalid_deadline" | "rejection_reason_required" | "adjust_not_allowed" | "adjust_requires_approval" | "adjust_approve_disabled" | "invalid_scope_option" | "invalid_briefing_assignment" | "payment_amount_not_editable" | "proposed_deadline_not_adjustable" | "proposed_delivery_not_editable" | "proposed_amount_not_adjustable" | "scope_amount_not_increased" | "scope_amount_reserved" | "scope_amount_already_approved" | "no_product" | "shipping_disabled" | "already_received" | "invalid_url" | "platform_mismatch" | "check_unavailable" | "approval_posted_at_in_past" | "mention_not_allowed" | "invalid_api_key" | "open_api_disabled" | "plan_required" | "coupons_disabled" | "creator_search_disabled" | "chat_disabled" | "communities_disabled" | "broadcast_disabled" | "ads_disabled" | "ads_forbidden" | "insufficient_scope" | "chat_forbidden" | "forbidden" | "brand_not_managed" | "agency_only" | "brand_blocked" | "module_disabled" | "not_found" | "coupon_exists" | "coupon_code_taken" | "coupon_canceled" | "coupon_assigned" | "coupon_mode_campaign" | "conversation_closed" | "idempotency_in_progress" | "idempotency_key_failed" | "coupon_campaign_mismatch" | "sale_occurred_at_out_of_range" | "validation_failed" | "idempotency_key_required" | "idempotency_key_reused" | "creator_not_in_campaign" | "mission_closed" | "delivery_date_required" | "perpetual_term_unavailable" | "unsupported_for_campaign_model" | "invalid_delivery_format" | "invalid_upload_ref" | "rate_limited" | "internal_error";
                 /** @description Mensagem em português, para pessoas. */
                 message: string;
                 /** @description Detalhes por campo ou por recurso. */
@@ -10522,6 +11005,34 @@ export interface components {
                 /** @description Id da requisição, para falar com o suporte. */
                 request_id: string;
             };
+        };
+        BrandList: {
+            /** @description Itens da página. */
+            data: components["schemas"]["Brand"][];
+            /**
+             * @description Se existe uma próxima página.
+             * @example false
+             */
+            has_more: boolean;
+            /**
+             * @description Cursor da próxima página, ou nulo na última.
+             * @example null
+             */
+            next_cursor: string | null;
+        };
+        Brand: {
+            /**
+             * Format: uuid
+             * @description Id da marca. Vai em X-Conty-Brand-Id.
+             */
+            id: string;
+            /** @description Nome da marca. */
+            name: string | null;
+            /**
+             * @description Status da conta da marca: active ou blocked.
+             * @enum {string}
+             */
+            status: "active" | "blocked";
         };
         Coupon: {
             /**
@@ -10829,6 +11340,131 @@ export interface components {
              */
             next_cursor: string | null;
         };
+        CreatorSearchPage: {
+            data: components["schemas"]["CreatorSearchItem"][];
+            /**
+             * @description Há mais páginas.
+             * @example true
+             */
+            has_more: boolean;
+            /**
+             * @description Cursor da próxima página. Nulo na última.
+             * @example MXwyfFkyOXVkSGt0YzJWaGNtTm8
+             */
+            next_cursor: string | null;
+            /**
+             * @description Total de creators encontrados.
+             * @example 230
+             */
+            total: number;
+        };
+        CreatorSearchItem: {
+            /**
+             * Format: uuid
+             * @description Id do creator.
+             * @example 9d3f1b7c-5e2a-4c8d-a6b1-2f3e4d5c6b7a
+             */
+            id: string;
+            /**
+             * @description Nome do creator.
+             * @example Maria Silva
+             */
+            name: string;
+            /**
+             * @description Bio do perfil.
+             * @example Criadora de conteúdo de beleza.
+             */
+            biography: string | null;
+            /**
+             * @description Foto do perfil.
+             * @example https://cdn.appconty.com/avatar.jpg
+             */
+            profile_image_url: string | null;
+            /**
+             * @description Gênero.
+             * @example feminino
+             */
+            gender: string | null;
+            /**
+             * @description Idade.
+             * @example 27
+             */
+            age: number | null;
+            /**
+             * @description Profissão.
+             * @example Maquiadora
+             */
+            profession: string | null;
+            /**
+             * @description Creator PRO.
+             * @example false
+             */
+            pro: boolean;
+            /**
+             * @description Maior número de seguidores entre as redes filtradas.
+             * @example 48200
+             */
+            followers: number | null;
+            /**
+             * @description Redes informadas no perfil do creator.
+             * @example [
+             *       {
+             *         "platform": "instagram",
+             *         "handle": "maria.silva",
+             *         "followers": 48200
+             *       }
+             *     ]
+             */
+            networks: components["schemas"]["CreatorSearchNetwork"][];
+            /**
+             * @description Selo de verificado no Instagram.
+             * @example false
+             */
+            instagram_verified: boolean | null;
+            /**
+             * @description Categoria do perfil comercial no Instagram.
+             * @example Criador de conteúdo digital
+             */
+            instagram_business_category: string | null;
+            /**
+             * @description Link do portfólio.
+             * @example https://portfolio.appconty.com/maria
+             */
+            portfolio_url: string | null;
+            /**
+             * @description Missões aprovadas.
+             * @example 12
+             */
+            approved_missions_count: number;
+            /**
+             * @description Missões no total.
+             * @example 14
+             */
+            total_missions_count: number;
+            /**
+             * @description Nota média. Nulo sem avaliação.
+             * @example 4.8
+             */
+            average_score: number | null;
+        };
+        CreatorSearchNetwork: {
+            /**
+             * @description Rede social.
+             * @example instagram
+             * @enum {string}
+             */
+            platform: "instagram" | "tiktok" | "x" | "youtube";
+            /**
+             * @description @ do creator na rede.
+             * @example maria.silva
+             */
+            handle: string;
+            /**
+             * @description Seguidores na rede. Por enquanto só no Instagram; nas outras redes vem nulo.
+             * @example 48200
+             */
+            followers: number | null;
+        };
         /**
          * @example {
          *       "valid": false,
@@ -10987,6 +11623,7 @@ export interface components {
             /** @enum {string} */
             payment_split_model?: "equal" | "per_creator" | "creator_proposal";
             payables_project_code?: string | null;
+            invoice_instructions?: string | null;
             /** Format: uuid */
             tracking_pixel_id?: string;
             tracking_destination_url?: string | null;
@@ -11030,6 +11667,7 @@ export interface components {
                 requires_cover_approval?: boolean;
                 requires_caption_approval?: boolean;
                 requires_ad_code?: boolean;
+                allows_script_file?: boolean;
                 requires_product_shipping?: boolean;
                 delivery_deadline_by_brand?: boolean;
                 shipping_item?: string | null;
@@ -11649,6 +12287,7 @@ export interface components {
             /** @enum {string} */
             payment_split_model?: "equal" | "per_creator" | "creator_proposal";
             payables_project_code?: string | null;
+            invoice_instructions?: string | null;
             /** Format: uuid */
             tracking_pixel_id?: string;
             tracking_destination_url?: string | null;
@@ -11692,6 +12331,7 @@ export interface components {
                 requires_cover_approval?: boolean;
                 requires_caption_approval?: boolean;
                 requires_ad_code?: boolean;
+                allows_script_file?: boolean;
                 requires_product_shipping?: boolean;
                 delivery_deadline_by_brand?: boolean;
                 shipping_item?: string | null;
@@ -11767,6 +12407,7 @@ export interface components {
             /** @enum {string|null} */
             payment_split_model?: "equal" | "per_creator" | "creator_proposal" | null;
             payables_project_code?: string | null;
+            invoice_instructions?: string | null;
             /** Format: uuid */
             tracking_pixel_id?: string | null;
             tracking_destination_url?: string | null;
@@ -11810,6 +12451,7 @@ export interface components {
                 requires_cover_approval?: boolean;
                 requires_caption_approval?: boolean;
                 requires_ad_code?: boolean;
+                allows_script_file?: boolean;
                 requires_product_shipping?: boolean;
                 delivery_deadline_by_brand?: boolean;
                 shipping_item?: string | null;
@@ -12246,7 +12888,7 @@ export interface components {
          * @example approved
          * @enum {string}
          */
-        StageId: "interested" | "preApproved" | "declinedByBrand" | "awaitingBriefing" | "invited" | "assetReview" | "inProgress" | "submitted" | "requestedChanges" | "approved" | "refused" | "excluded" | "curationApproved" | "curationRejected" | "overview" | "script.awaiting" | "script.internal" | "script.brand" | "script.changeRequest" | "script.adjusting" | "script.approved" | "content.awaiting" | "content.internal" | "content.brand" | "content.changeRequest" | "content.adjusting" | "content.release" | "content.approved" | "content.published";
+        StageId: "interested" | "preApproved" | "declinedByBrand" | "awaitingBriefing" | "invited" | "assetReview" | "inProgress" | "submitted" | "requestedChanges" | "approved" | "refused" | "excluded" | "curationApproved" | "curationRejected" | "overview" | "script.awaiting" | "script.internal" | "script.brand" | "script.changeRequest" | "script.adjusting" | "script.approved" | "content.awaiting" | "content.internal" | "content.brand" | "content.changeRequest" | "content.adjusting" | "content.release" | "content.approved" | "content.published" | "content.analyticsReview" | "content.analyticsResend";
         BoardStageSort: {
             /**
              * @description Valor para mandar em sort nos itens desta etapa.
@@ -14549,7 +15191,7 @@ export interface components {
                  * @example approved
                  * @enum {string}
                  */
-                id: "interested" | "preApproved" | "declinedByBrand" | "awaitingBriefing" | "invited" | "assetReview" | "inProgress" | "submitted" | "requestedChanges" | "approved" | "refused" | "excluded" | "curationApproved" | "curationRejected" | "overview" | "script.awaiting" | "script.internal" | "script.brand" | "script.changeRequest" | "script.adjusting" | "script.approved" | "content.awaiting" | "content.internal" | "content.brand" | "content.changeRequest" | "content.adjusting" | "content.release" | "content.approved" | "content.published";
+                id: "interested" | "preApproved" | "declinedByBrand" | "awaitingBriefing" | "invited" | "assetReview" | "inProgress" | "submitted" | "requestedChanges" | "approved" | "refused" | "excluded" | "curationApproved" | "curationRejected" | "overview" | "script.awaiting" | "script.internal" | "script.brand" | "script.changeRequest" | "script.adjusting" | "script.approved" | "content.awaiting" | "content.internal" | "content.brand" | "content.changeRequest" | "content.adjusting" | "content.release" | "content.approved" | "content.published" | "content.analyticsReview" | "content.analyticsResend";
                 /**
                  * @description Creators na etapa.
                  * @example 2
@@ -15696,7 +16338,10 @@ export interface components {
         } | null;
     };
     responses: never;
-    parameters: never;
+    parameters: {
+        /** @description Id do cliente que a chave da agência vai operar (veja GET /brands). Chave de agência sem ele recebe 403 nas rotas de marca. Chave de marca: omita ou envie o próprio id. */
+        BrandContextHeader: components["schemas"]["BrandContextHeader"];
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
