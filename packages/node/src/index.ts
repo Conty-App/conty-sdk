@@ -13,6 +13,13 @@ export type {
   RestoreApplicationBody,
 } from "./api/applications/types";
 export type {
+  Brand,
+  BrandList,
+  BrandStatus,
+  BrandsResource,
+  ListBrandsParams,
+} from "./api/brands/types";
+export type {
   BulkJob,
   BulkJobStatus,
   BulkJobsResource,
@@ -124,6 +131,14 @@ export type {
   ConversionEventsResource,
   ConversionEventsResult,
 } from "./api/conversion-events/types";
+export type {
+  CreatorSearchItem,
+  CreatorSearchNetwork,
+  CreatorSearchPage,
+  CreatorSearchSort,
+  CreatorsResource,
+  SearchCreatorsParams,
+} from "./api/creators/types";
 export type { components as ContyApiSchemas } from "./api/generated/openapi";
 export type { ApiKeyScope, CampaignModel, Me, MeResource } from "./api/me/types";
 export type {

@@ -25,6 +25,7 @@ function headersFor(apiKey: string, request: ApiRequest): Record<string, string>
   };
   if (request.body !== undefined) headers[header.contentType] = PUBLIC_API.jsonContent;
   if (request.idempotencyKey) headers[header.idempotency] = request.idempotencyKey;
+  if (request.brandId) headers[header.brand] = request.brandId;
   return headers;
 }
 

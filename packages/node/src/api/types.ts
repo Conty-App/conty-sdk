@@ -3,9 +3,11 @@ import type { ContyResult } from "../client/types";
 import type { ContyError } from "../errors/errors";
 import type { Sleep } from "../transport/types";
 import type { ApplicationsResource } from "./applications/types";
+import type { BrandsResource } from "./brands/types";
 import type { BulkJobsResource } from "./bulk-jobs/types";
 import type { CampaignsResource } from "./campaigns/types";
 import type { ConversionEventsResource } from "./conversion-events/types";
+import type { CreatorsResource } from "./creators/types";
 import type { paths } from "./generated/openapi";
 import type { MeResource } from "./me/types";
 import type { MissionCombosResource } from "./mission-combos/types";
@@ -15,6 +17,7 @@ import type { UploadsResource } from "./uploads/types";
 
 export interface ContyApiOptions extends Partial<Deps> {
   apiKey: string;
+  brandId?: string;
   baseUrl?: string;
   maxRetries?: number;
   timeoutMs?: number;
@@ -47,6 +50,7 @@ export interface ApiRequest {
   body?: unknown;
   idempotencyKey?: string;
   accept?: string;
+  brandId?: string;
 }
 
 export interface Transport {
@@ -62,5 +66,8 @@ export interface ContyApi {
   postChecks: PostChecksResource;
   conversionEvents: ConversionEventsResource;
   uploads: UploadsResource;
+  creators: CreatorsResource;
+  brands: BrandsResource;
   me: MeResource;
+  forBrand(brandId: string): ContyApi;
 }

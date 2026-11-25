@@ -8,6 +8,7 @@ export const PUBLIC_API = {
     idempotency: "Idempotency-Key",
     requestId: "X-Request-ID",
     retryAfter: "Retry-After",
+    brand: "X-Conty-Brand-Id",
   },
   jsonContent: "application/json",
   textContent: /^text\/csv\b/i,
