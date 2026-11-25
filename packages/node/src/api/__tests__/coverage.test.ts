@@ -20,6 +20,8 @@ const OPERATIONS: Record<string, string> = {
   "POST /uploads": "uploads.create",
   "POST /uploads/import": "uploads.import",
   "GET /me": "me.get",
+  "GET /brands": "brands.list",
+  "GET /creators/search": "creators.search",
   "POST /campaigns/{id}/applications/{application_id}/approve": "applications.approve",
   "POST /campaigns/{id}/applications/{application_id}/reject": "applications.reject",
   "POST /campaigns/{id}/applications/{application_id}/restore": "applications.restore",
