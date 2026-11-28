@@ -7,7 +7,12 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!.github/assets"]
+    "includes": [
+      "**",
+      "!.github/assets",
+      "!packages/node/src/api/generated",
+      "!test/fixtures/openapi.json"
+    ]
   },
   "formatter": {
     "enabled": true,

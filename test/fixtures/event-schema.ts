@@ -4,6 +4,10 @@ import { z } from "zod";
 const noNul = (value: string) => !value.includes("\u0000");
 const text = (max: number) => z.string().trim().min(1).max(max).refine(noNul);
 const bytes = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).byteLength;
+const DATE = String.raw`(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))`;
+const TIME = String.raw`(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?`;
+const OFFSET = String.raw`([+-](?:[01]\d|2[0-3]):[0-5]\d)`;
+const isoDateTime = z.stringFormat("datetime", new RegExp(`^${DATE}T(?:${TIME}(?:Z|${OFFSET}))$`));
 const noNulDeep = (value: unknown) => {
   let clean = true;
   JSON.stringify(value, (key, item) => {
@@ -14,8 +18,8 @@ const noNulDeep = (value: unknown) => {
 };
 
 export const BrandEventSchema = z.object({
-  event: z.string().max(EVENT.name.max).regex(EVENT.name.pattern),
-  occurred_at: z.iso.datetime({ offset: true }),
+  event: z.string().min(1).max(EVENT.name.max).regex(EVENT.name.pattern),
+  occurred_at: isoDateTime,
   external_id: z.string().min(1).max(EVENT.externalId.max).refine(noNul).optional(),
   link_code: text(EVENT.linkCode.max).optional(),
   utm_campaign: text(UTM.maxLength).optional(),

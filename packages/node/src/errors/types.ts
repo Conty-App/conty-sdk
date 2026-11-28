@@ -4,4 +4,5 @@ export interface ContyErrorInit {
   message: string;
   details?: unknown;
   accepted?: number;
+  requestId?: string | null;
 }
