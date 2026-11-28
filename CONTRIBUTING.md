@@ -73,7 +73,13 @@ Siga a seção "Pacote novo" do [AGENTS.md](AGENTS.md): `package.json` com `@con
 
 ## Release
 
-A publicação no npm é manual, feita por quem mantém o escopo `@conty`: bump de versão no `package.json` do pacote, `npm run build` e `npm publish -w @conty/<pacote>`.
+A publicação no npm sai pelo workflow `.github/workflows/release.yml`, com trusted publishing (OIDC, sem token) e provenance.
+
+1. Suba a versão no `package.json` de cada pacote que muda (`packages/node`, `packages/web`, `packages/react-native`).
+2. Faça o merge na `main`.
+3. Crie um release no GitHub. O workflow roda lint, typecheck, testes e build e publica só os pacotes cuja versão ainda não está no npm. Também dá para rodar pelo `workflow_dispatch`.
+
+Cada pacote tem um Trusted Publisher no npm com: GitHub Actions, org `Conty-App`, repositório `conty-sdk`, workflow `release.yml`, environment `npm`.
 
 ## Bugs e segurança
 
